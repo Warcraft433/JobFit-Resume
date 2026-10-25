@@ -1,0 +1,43 @@
+{
+  "total": 6,
+  "passed": 6,
+  "failed": 0,
+  "tests": [
+    {
+      "id": "REG-01",
+      "description": "Browser tab title displays branded JobFit Resume product title",
+      "passed": true,
+      "details": "Actual title: \"JobFit Resume — ATS Resume Builder & Career Workspace\""
+    },
+    {
+      "id": "REG-02",
+      "description": "Chronological date calculation accurately computes 5 years from 2018-01 to 2023-01",
+      "passed": true,
+      "details": "Score: 25, Assessment: \"Meets or exceeds requirement: 5 year(s) of experience (required: 5+ years).\""
+    },
+    {
+      "id": "REG-03-classic",
+      "description": "PDF Template \"classic\" text stream starts cleanly with candidate name",
+      "passed": true,
+      "details": "First line: \"Experience Math Tester\""
+    },
+    {
+      "id": "REG-03-modern",
+      "description": "PDF Template \"modern\" text stream starts cleanly with candidate name",
+      "passed": true,
+      "details": "First line: \"Experience Math Tester\""
+    },
+    {
+      "id": "REG-03-technical",
+      "description": "PDF Template \"technical\" text stream starts cleanly with candidate name",
+      "passed": true,
+      "details": "First line: \"Experience Math Tester\""
+    },
+    {
+      "id": "REG-04",
+      "description": "Word DOCX exports valid OpenXML document without corruption",
+      "passed": true,
+      "details": "Size: 3037 bytes"
+    }
+  ]
+}

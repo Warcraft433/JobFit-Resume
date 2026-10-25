@@ -1,0 +1,219 @@
+{
+  "total": 30,
+  "passed": 30,
+  "failed": 0,
+  "tests": [
+    {
+      "id": "P1-01",
+      "feature": "Homepage",
+      "scenario": "Page title check",
+      "passed": true,
+      "details": "Title: \"JobFit Resume — ATS Resume Builder & Career Workspace\""
+    },
+    {
+      "id": "P1-02",
+      "feature": "Homepage",
+      "scenario": "Hero headline clearly explains product value",
+      "passed": true,
+      "details": "One Career Profile. Custom ATS Resumes for Every Single Vacancy."
+    },
+    {
+      "id": "P1-03",
+      "feature": "Homepage",
+      "scenario": "Displays 4 core value propositions",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P1-04",
+      "feature": "Homepage",
+      "scenario": "Mobile viewport responsive display",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-01",
+      "feature": "Registration",
+      "scenario": "Password mismatch rejection",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-02",
+      "feature": "Registration",
+      "scenario": "Successful registration redirects to dashboard",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-03",
+      "feature": "Authentication",
+      "scenario": "Logout redirects to /login",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-04",
+      "feature": "Authentication",
+      "scenario": "Protected route redirects unauthenticated user",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-05",
+      "feature": "Authentication",
+      "scenario": "Invalid credentials error display",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P2-06",
+      "feature": "Authentication",
+      "scenario": "Valid login redirects to dashboard",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-01",
+      "feature": "Career Profile",
+      "scenario": "Personal info save confirmed",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-02",
+      "feature": "Career Profile",
+      "scenario": "Work experience item added and listed",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-03",
+      "feature": "Career Profile",
+      "scenario": "Education item added and listed",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-04",
+      "feature": "Career Profile",
+      "scenario": "Multiple categorized technical skills added",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-05",
+      "feature": "Career Profile",
+      "scenario": "Featured technical project added",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-06",
+      "feature": "Career Profile",
+      "scenario": "Certification added",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P3-07",
+      "feature": "Career Profile",
+      "scenario": "Profile data persists after browser refresh",
+      "passed": true,
+      "details": "Headline: \"Senior Full Stack Java Engineer\", Email: \"alex.rivera@professional.net\""
+    },
+    {
+      "id": "P3-08",
+      "feature": "Dashboard",
+      "scenario": "Dashboard reflects user profile completeness",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P4-01",
+      "feature": "Job Analyzer",
+      "scenario": "Job vacancy saved and listed",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P4-02",
+      "feature": "Job Analyzer",
+      "scenario": "Calculates explainable match score",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P4-03",
+      "feature": "Job Analyzer",
+      "scenario": "Identifies matched skills from profile",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P4-04",
+      "feature": "Job Analyzer",
+      "scenario": "Identifies missing skills / skills gap",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P5-01",
+      "feature": "Resume Generator",
+      "scenario": "Generates truthful resume tailored to target job",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P5-02",
+      "feature": "Resume Generator",
+      "scenario": "Switches between resume templates",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P5-03",
+      "feature": "Document Export",
+      "scenario": "Generates and downloads valid A4 PDF",
+      "passed": true,
+      "details": "Size: 3215 bytes"
+    },
+    {
+      "id": "P5-04",
+      "feature": "Document Export",
+      "scenario": "Generates and downloads valid Word DOCX (Apache POI)",
+      "passed": true,
+      "details": "Size: 3342 bytes"
+    },
+    {
+      "id": "P6-01",
+      "feature": "Application Tracker",
+      "scenario": "Creates application linked to job vacancy",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P6-02",
+      "feature": "Dashboard",
+      "scenario": "Dashboard funnel synchronizes with application counts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P7-01",
+      "feature": "Data Isolation",
+      "scenario": "User B sees clean dashboard without User A data",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "id": "P7-02",
+      "feature": "Data Isolation",
+      "scenario": "User B cannot see User A profile entries",
+      "passed": true,
+      "details": ""
+    }
+  ],
+  "defects": [],
+  "observations": []
+}

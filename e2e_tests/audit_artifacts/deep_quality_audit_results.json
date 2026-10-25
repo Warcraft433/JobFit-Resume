@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-10-25T05:47:27.795Z",
+  "sections": {},
+  "defects": [
+    {
+      "id": "AUD-01",
+      "title": "Page title is generic default \"frontend\"",
+      "severity": "LOW",
+      "category": "UI/Branding",
+      "description": "The browser page title in index.html is literally \"frontend\" instead of \"JobFit Resume — ATS Resume Builder\". The assertion pageTitle.length > 0 was a weak assertion that masked this.",
+      "reproduction": "Open http://localhost:3000 and observe browser tab title."
+    },
+    {
+      "id": "AUD-07",
+      "title": "Candidate experience heuristic uses arbitrary (roles * 2) instead of date calculation",
+      "severity": "MEDIUM",
+      "category": "Matching Accuracy",
+      "description": "JobMatchingService.calculateCandidateExperienceYears() computes candidate years as totalRoles * 2. It ignores actual start and end dates. A single 10-year job counts as 2 years; two 2-month summer internships count as 4 years.",
+      "reproduction": "Inspect JobMatchingService.java line 186."
+    },
+    {
+      "id": "AUD-09-classic",
+      "title": "PDF Template \"classic\": Dates and metadata float to the top of the text stream",
+      "severity": "HIGH",
+      "category": "Document Generation",
+      "description": "In OpenHTMLtoPDF rendering, CSS float: right or flex emulation causes dates (\"Present\", \"2016-2020\") or tech tags to be emitted in the PDF text stream before the candidate name and header. First 5 lines: \"2016 – 2020 Java 21, Spring Boot 3, Kafka, PostgreSQL, Docker 2021-03 – Present Alex Rivera Audit Lead Full Stack Architect | Java 21 & React\"",
+      "reproduction": "Export PDF for template \"classic\" and extract text using PDF reader/parser."
+    },
+    {
+      "id": "AUD-09-modern",
+      "title": "PDF Template \"modern\": Dates and metadata float to the top of the text stream",
+      "severity": "HIGH",
+      "category": "Document Generation",
+      "description": "In OpenHTMLtoPDF rendering, CSS float: right or flex emulation causes dates (\"Present\", \"2016-2020\") or tech tags to be emitted in the PDF text stream before the candidate name and header. First 5 lines: \"2016 – 2020 Java 21, Spring Boot 3, Kafka, PostgreSQL, Docker 2021-03 – Present Alex Rivera Audit Lead Full Stack Architect | Java 21 & React\"",
+      "reproduction": "Export PDF for template \"modern\" and extract text using PDF reader/parser."
+    },
+    {
+      "id": "AUD-09-technical",
+      "title": "PDF Template \"technical\": Dates and metadata float to the top of the text stream",
+      "severity": "HIGH",
+      "category": "Document Generation",
+      "description": "In OpenHTMLtoPDF rendering, CSS float: right or flex emulation causes dates (\"Present\", \"2016-2020\") or tech tags to be emitted in the PDF text stream before the candidate name and header. First 5 lines: \"2016 – 2020 Java 21, Spring Boot 3, Kafka, PostgreSQL, Docker 2021-03 – Present Alex Rivera Audit Lead Full Stack Architect | Java 21 & React\"",
+      "reproduction": "Export PDF for template \"technical\" and extract text using PDF reader/parser."
+    }
+  ],
+  "warnings": [
+    {
+      "id": "AUD-02",
+      "title": "Template switch test has false-positive prone assertion",
+      "category": "Test Suite Quality",
+      "description": "P5-02 asserts true immediately after clicking the template button without asserting that the preview DOM re-rendered with the new template layout or CSS classes."
+    },
+    {
+      "id": "AUD-03",
+      "title": "Document export tests only validated file size and magic bytes",
+      "category": "Test Suite Quality",
+      "description": "P5-03 and P5-04 only verified that the download occurred and file size was > 2000 bytes. They did not parse document text, verify section presence, check layout clipping, or test all 3 templates."
+    }
+  ],
+  "observations": []
+}
