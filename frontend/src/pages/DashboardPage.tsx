@@ -11,25 +11,37 @@ export const DashboardPage: React.FC = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [resumes, setResumes] = useState<any[]>([]);
   const [skillsCount, setSkillsCount] = useState<number>(0);
+  const [isDashboardLoading, setIsDashboardLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsDashboardLoading(true);
       try {
-        const [compRes, jobsRes, resumesRes, skillsRes] = await Promise.all([
-          apiClient.get<ApiResponse<ProfileCompleteness>>('/profile/completeness').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/jobs').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/resumes').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/profile/skills').catch(() => null),
+        const results = await Promise.allSettled([
+          apiClient.get<ApiResponse<ProfileCompleteness>>('/profile/completeness'),
+          apiClient.get<ApiResponse<any[]>>('/jobs'),
+          apiClient.get<ApiResponse<any[]>>('/resumes'),
+          apiClient.get<ApiResponse<any[]>>('/profile/skills'),
         ]);
 
-        if (compRes?.data?.success) setCompleteness(compRes.data.data);
-        if (jobsRes?.data?.success) setJobs(jobsRes.data.data || []);
-        if (resumesRes?.data?.success) setResumes(resumesRes.data.data || []);
-        if (skillsRes?.data?.success && Array.isArray(skillsRes.data.data)) {
-          setSkillsCount(skillsRes.data.data.length);
+        const [compRes, jobsRes, resumesRes, skillsRes] = results;
+
+        if (compRes.status === 'fulfilled' && compRes.value.data.success) {
+          setCompleteness(compRes.value.data.data);
+        }
+        if (jobsRes.status === 'fulfilled' && jobsRes.value.data.success) {
+          setJobs(jobsRes.value.data.data || []);
+        }
+        if (resumesRes.status === 'fulfilled' && resumesRes.value.data.success) {
+          setResumes(resumesRes.value.data.data || []);
+        }
+        if (skillsRes.status === 'fulfilled' && skillsRes.value.data.success && Array.isArray(skillsRes.value.data.data)) {
+          setSkillsCount(skillsRes.value.data.data.length);
         }
       } catch {
         // ignore
+      } finally {
+        setIsDashboardLoading(false);
       }
     };
     fetchData();
@@ -68,9 +80,17 @@ export const DashboardPage: React.FC = () => {
           </h1>
           <p>Make your next application your strongest one yet.</p>
         </div>
-        <button className="btn primary" onClick={() => navigate('/jobs')}>
-          ＋ Create tailored resume
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {isDashboardLoading && (
+            <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="h-2 w-2 rounded-full bg-[var(--accent)] animate-ping"></span>
+              Syncing...
+            </span>
+          )}
+          <button className="btn primary" onClick={() => navigate('/jobs')}>
+            ＋ Create tailored resume
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}

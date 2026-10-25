@@ -86,6 +86,7 @@ export const ProfilePage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>('personal');
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
 
   // Profile data states
   const [profile, setProfile] = useState<Partial<UserProfile>>({
@@ -189,8 +190,9 @@ export const ProfilePage: React.FC = () => {
   }, []);
 
   const fetchAllProfileData = async () => {
+    setIsPageLoading(true);
     try {
-      const [pRes, expRes, eduRes, skRes, projRes, certRes] = await Promise.all([
+      const results = await Promise.allSettled([
         apiClient.get<ApiResponse<UserProfile>>('/profile'),
         apiClient.get<ApiResponse<Experience[]>>('/experience'),
         apiClient.get<ApiResponse<Education[]>>('/education'),
@@ -199,28 +201,50 @@ export const ProfilePage: React.FC = () => {
         apiClient.get<ApiResponse<Certification[]>>('/certifications'),
       ]);
 
-      if (pRes.data.success && pRes.data.data) {
-        const loadedProfile = pRes.data.data;
+      const [pRes, expRes, eduRes, skRes, projRes, certRes] = results;
+
+      console.log('fetchAllProfileData results:', {
+        pStatus: pRes.status,
+        pVal: pRes.status === 'fulfilled' ? pRes.value.data : null,
+        expStatus: expRes.status,
+        expVal: expRes.status === 'fulfilled' ? expRes.value.data : null,
+      });
+
+      if (pRes.status === 'fulfilled' && pRes.value.data.success && pRes.value.data.data) {
+        const loadedProfile = pRes.value.data.data;
         if (!loadedProfile.contactEmail && user?.email) {
           loadedProfile.contactEmail = user.email;
         }
         setProfile(loadedProfile);
-        if (pRes.data.data.customLinks) {
+        if (loadedProfile.customLinks) {
           try {
-            const parsed = JSON.parse(pRes.data.data.customLinks);
+            const parsed = JSON.parse(loadedProfile.customLinks);
             if (Array.isArray(parsed)) setCustomLinks(parsed);
           } catch {
             // ignore
           }
         }
       }
-      if (expRes.data.success) setExperiences(expRes.data.data);
-      if (eduRes.data.success) setEducations(eduRes.data.data);
-      if (skRes.data.success) setUserSkills(skRes.data.data);
-      if (projRes.data.success) setProjects(projRes.data.data);
-      if (certRes.data.success) setCertifications(certRes.data.data);
+
+      if (expRes.status === 'fulfilled' && expRes.value.data.success && Array.isArray(expRes.value.data.data)) {
+        setExperiences(expRes.value.data.data);
+      }
+      if (eduRes.status === 'fulfilled' && eduRes.value.data.success && Array.isArray(eduRes.value.data.data)) {
+        setEducations(eduRes.value.data.data);
+      }
+      if (skRes.status === 'fulfilled' && skRes.value.data.success && Array.isArray(skRes.value.data.data)) {
+        setUserSkills(skRes.value.data.data);
+      }
+      if (projRes.status === 'fulfilled' && projRes.value.data.success && Array.isArray(projRes.value.data.data)) {
+        setProjects(projRes.value.data.data);
+      }
+      if (certRes.status === 'fulfilled' && certRes.value.data.success && Array.isArray(certRes.value.data.data)) {
+        setCertifications(certRes.value.data.data);
+      }
     } catch (err: any) {
       console.error(err);
+    } finally {
+      setIsPageLoading(false);
     }
   };
 
@@ -478,10 +502,17 @@ export const ProfilePage: React.FC = () => {
           <h1>Professional profile</h1>
           <p>Keep your career information in one place. Your tailored resumes will only use verified details from here.</p>
         </div>
-        <button type="button" className="btn primary" onClick={handleSaveProfile}>
+        <button type="button" className="btn primary" onClick={handleSaveProfile} disabled={isPageLoading}>
           Save profile
         </button>
       </div>
+
+      {isPageLoading && (
+        <div className="flex items-center gap-2.5 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-[var(--muted)] mb-4">
+          <div className="h-4 w-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+          <span>Syncing your verified profile from Supabase...</span>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-[var(--border)] pb-3">

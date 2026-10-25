@@ -28,37 +28,47 @@ export const ResumeBuilderPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [jobsRes, resumesRes, profRes, skRes, expRes, eduRes, projRes] = await Promise.all([
-          apiClient.get<ApiResponse<any[]>>('/jobs').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/resumes').catch(() => null),
-          apiClient.get<ApiResponse<any>>('/profile').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/profile/skills').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/experience').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/education').catch(() => null),
-          apiClient.get<ApiResponse<any[]>>('/projects').catch(() => null),
+        const results = await Promise.allSettled([
+          apiClient.get<ApiResponse<any[]>>('/jobs'),
+          apiClient.get<ApiResponse<any[]>>('/resumes'),
+          apiClient.get<ApiResponse<any>>('/profile'),
+          apiClient.get<ApiResponse<any[]>>('/profile/skills'),
+          apiClient.get<ApiResponse<any[]>>('/experience'),
+          apiClient.get<ApiResponse<any[]>>('/education'),
+          apiClient.get<ApiResponse<any[]>>('/projects'),
         ]);
 
-        if (profRes?.data?.success && profRes.data.data) {
-          setProfile(profRes.data.data);
-          if (profRes.data.data.professionalHeadline) {
-            setTargetRole(profRes.data.data.professionalHeadline);
+        const [jobsRes, resumesRes, profRes, skRes, expRes, eduRes, projRes] = results;
+
+        if (profRes.status === 'fulfilled' && profRes.value.data?.success && profRes.value.data.data) {
+          setProfile(profRes.value.data.data);
+          if (profRes.value.data.data.professionalHeadline) {
+            setTargetRole(profRes.value.data.data.professionalHeadline);
           }
         }
-        if (skRes?.data?.success && Array.isArray(skRes.data.data)) setSkills(skRes.data.data);
-        if (expRes?.data?.success && Array.isArray(expRes.data.data)) setExperiences(expRes.data.data);
-        if (eduRes?.data?.success && Array.isArray(eduRes.data.data)) setEducations(eduRes.data.data);
-        if (projRes?.data?.success && Array.isArray(projRes.data.data)) setProjects(projRes.data.data);
-
-        if (jobsRes?.data?.success) {
-          setJobs(jobsRes.data.data);
-          const queryJobId = searchParams.get('jobId');
-          if (queryJobId) setSelectedJobId(queryJobId);
-          else if (jobsRes.data.data.length > 0) setSelectedJobId(jobsRes.data.data[0].id);
+        if (skRes.status === 'fulfilled' && skRes.value.data?.success && Array.isArray(skRes.value.data.data)) {
+          setSkills(skRes.value.data.data);
+        }
+        if (expRes.status === 'fulfilled' && expRes.value.data?.success && Array.isArray(expRes.value.data.data)) {
+          setExperiences(expRes.value.data.data);
+        }
+        if (eduRes.status === 'fulfilled' && eduRes.value.data?.success && Array.isArray(eduRes.value.data.data)) {
+          setEducations(eduRes.value.data.data);
+        }
+        if (projRes.status === 'fulfilled' && projRes.value.data?.success && Array.isArray(projRes.value.data.data)) {
+          setProjects(projRes.value.data.data);
         }
 
-        if (resumesRes?.data?.success && resumesRes.data.data.length > 0) {
-          setResumes(resumesRes.data.data);
-          const first = resumesRes.data.data[0];
+        if (jobsRes.status === 'fulfilled' && jobsRes.value.data?.success && Array.isArray(jobsRes.value.data.data)) {
+          setJobs(jobsRes.value.data.data);
+          const queryJobId = searchParams.get('jobId');
+          if (queryJobId) setSelectedJobId(queryJobId);
+          else if (jobsRes.value.data.data.length > 0) setSelectedJobId(jobsRes.value.data.data[0].id);
+        }
+
+        if (resumesRes.status === 'fulfilled' && resumesRes.value.data?.success && Array.isArray(resumesRes.value.data.data) && resumesRes.value.data.data.length > 0) {
+          setResumes(resumesRes.value.data.data);
+          const first = resumesRes.value.data.data[0];
           if (first.title) setResumeTitle(first.title);
           const verRes = await apiClient.get<ApiResponse<any[]>>(`/resumes/${first.id}/versions`).catch(() => null);
           if (verRes?.data?.success && verRes.data.data.length > 0) {
