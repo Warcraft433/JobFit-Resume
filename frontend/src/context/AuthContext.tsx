@@ -50,6 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const login = async (email: string, password: string) => {
+    // Purge any previous user session before authenticating
+    localStorage.removeItem('jobfit_token');
+    localStorage.removeItem('jobfit_user');
+    setToken(null);
+    setUser(null);
+
     const res = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login', { email, password });
     if (res.data.success && res.data.data) {
       const { token: jwtToken, user: authUser } = res.data.data;
@@ -63,6 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (fullName: string, email: string, password: string) => {
+    // Purge any previous user session before registering
+    localStorage.removeItem('jobfit_token');
+    localStorage.removeItem('jobfit_user');
+    setToken(null);
+    setUser(null);
+
     const res = await apiClient.post<ApiResponse<AuthResponse>>('/auth/register', {
       fullName,
       email,

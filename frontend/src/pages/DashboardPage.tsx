@@ -10,23 +10,23 @@ export const DashboardPage: React.FC = () => {
   const [completeness, setCompleteness] = useState<ProfileCompleteness | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [resumes, setResumes] = useState<any[]>([]);
-  const [skillsCount, setSkillsCount] = useState<number>(24);
+  const [skillsCount, setSkillsCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [compRes, jobsRes, resumesRes, profileRes] = await Promise.all([
+        const [compRes, jobsRes, resumesRes, skillsRes] = await Promise.all([
           apiClient.get<ApiResponse<ProfileCompleteness>>('/profile/completeness').catch(() => null),
           apiClient.get<ApiResponse<any[]>>('/jobs').catch(() => null),
           apiClient.get<ApiResponse<any[]>>('/resumes').catch(() => null),
-          apiClient.get<ApiResponse<any>>('/profile').catch(() => null),
+          apiClient.get<ApiResponse<any[]>>('/profile/skills').catch(() => null),
         ]);
 
         if (compRes?.data?.success) setCompleteness(compRes.data.data);
-        if (jobsRes?.data?.success) setJobs(jobsRes.data.data);
-        if (resumesRes?.data?.success) setResumes(resumesRes.data.data);
-        if (profileRes?.data?.success && profileRes.data.data?.skills) {
-          setSkillsCount(profileRes.data.data.skills.length);
+        if (jobsRes?.data?.success) setJobs(jobsRes.data.data || []);
+        if (resumesRes?.data?.success) setResumes(resumesRes.data.data || []);
+        if (skillsRes?.data?.success && Array.isArray(skillsRes.data.data)) {
+          setSkillsCount(skillsRes.data.data.length);
         }
       } catch {
         // ignore
@@ -42,21 +42,20 @@ export const DashboardPage: React.FC = () => {
     return 'Good evening';
   };
 
-  const profilePct = completeness?.score ?? 75;
-  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'Jordan';
-  const totalResumes = resumes.length > 0 ? String(resumes.length).padStart(2, '0') : '08';
-  const totalJobs = jobs.length > 0 ? String(jobs.length).padStart(2, '0') : '12';
+  const profilePct = completeness?.score ?? 0;
+  const firstName = user?.fullName
+    ? user.fullName.split(' ')[0]
+    : user?.email
+    ? user.email.split('@')[0]
+    : 'there';
+  const totalResumes = String(resumes.length).padStart(2, '0');
+  const totalJobs = String(jobs.length).padStart(2, '0');
 
-  const savedResumes = resumes.length > 0
-    ? resumes.slice(0, 3).map((r) => ({
-        role: r.title || 'Frontend Developer',
-        date: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : 'Updated today',
-        status: 'Saved',
-      }))
-    : [
-        { role: 'Frontend Developer', date: 'Updated today', status: 'Draft' },
-        { role: 'Product Designer', date: 'Updated Oct 22', status: 'Saved' },
-      ];
+  const savedResumes = resumes.slice(0, 3).map((r) => ({
+    role: r.title || 'Untitled Resume',
+    date: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : 'Updated recently',
+    status: r.isBase ? 'Master' : 'Custom',
+  }));
 
   return (
     <div>
@@ -209,25 +208,38 @@ export const DashboardPage: React.FC = () => {
                 View all
               </Link>
             </div>
-            {savedResumes.map((r, i) => (
-              <div className="resume-row" key={i}>
-                <div className="docicon">▤</div>
-                <div className="meta">
-                  <b>{r.role}</b>
-                  <small>{r.date}</small>
+            {savedResumes.length > 0 ? (
+              savedResumes.map((r, i) => (
+                <div className="resume-row" key={i}>
+                  <div className="docicon">▤</div>
+                  <div className="meta">
+                    <b>{r.role}</b>
+                    <small>{r.date}</small>
+                  </div>
+                  <span className={`pill ${r.status === 'Draft' ? 'red' : 'blue'}`}>
+                    {r.status}
+                  </span>
+                  <button
+                    className="iconbtn"
+                    onClick={() => navigate('/resumes')}
+                    title="Edit resume"
+                  >
+                    ↗
+                  </button>
                 </div>
-                <span className={`pill ${r.status === 'Draft' ? 'red' : 'blue'}`}>
-                  {r.status}
-                </span>
+              ))
+            ) : (
+              <div style={{ padding: '24px 16px', color: 'var(--muted)', fontSize: '13px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 12px' }}>No resumes created yet.</p>
                 <button
-                  className="iconbtn"
-                  onClick={() => navigate('/resumes')}
-                  title="Edit resume"
+                  className="btn secondary"
+                  style={{ width: '100%', fontSize: '12px' }}
+                  onClick={() => navigate('/jobs')}
                 >
-                  ↗
+                  ＋ Create your first resume
                 </button>
               </div>
-            ))}
+            )}
             <button
               className="btn ghost"
               style={{ width: '100%', marginTop: '12px' }}

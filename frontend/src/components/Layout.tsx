@@ -24,6 +24,7 @@ export const Layout: React.FC = () => {
     return 'DASHBOARD';
   };
 
+  const displayName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'My Account');
   const initials = user?.fullName
     ? user.fullName
         .split(' ')
@@ -31,7 +32,9 @@ export const Layout: React.FC = () => {
         .join('')
         .toUpperCase()
         .slice(0, 2)
-    : 'JD';
+    : user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : 'CV';
 
   const handleLogout = () => {
     logout();
@@ -81,7 +84,7 @@ export const Layout: React.FC = () => {
               <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
             </button>
 
-            <div className="top-avatar" title={user?.fullName || 'User Profile'}>
+            <div className="top-avatar" title={displayName}>
               {initials}
             </div>
 

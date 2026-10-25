@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../api/client';
 import type { ApiResponse } from '../types';
 
 export const ResumeBuilderPage: React.FC = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<any | null>(null);
+  const [skills, setSkills] = useState<any[]>([]);
+  const [experiences, setExperiences] = useState<any[]>([]);
+  const [educations, setEducations] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('Clean ATS');
   const [paperColor, setPaperColor] = useState<string>('#E10600');
-  const [resumeTitle, setResumeTitle] = useState<string>('Frontend Developer Resume');
-  const [targetRole, setTargetRole] = useState<string>('Frontend Developer');
+  const [resumeTitle, setResumeTitle] = useState<string>('My Tailored Resume');
+  const [targetRole, setTargetRole] = useState<string>('Software Engineer');
   const [resumes, setResumes] = useState<any[]>([]);
   const [activeVersion, setActiveVersion] = useState<any | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -21,10 +28,26 @@ export const ResumeBuilderPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [jobsRes, resumesRes] = await Promise.all([
+        const [jobsRes, resumesRes, profRes, skRes, expRes, eduRes, projRes] = await Promise.all([
           apiClient.get<ApiResponse<any[]>>('/jobs').catch(() => null),
           apiClient.get<ApiResponse<any[]>>('/resumes').catch(() => null),
+          apiClient.get<ApiResponse<any>>('/profile').catch(() => null),
+          apiClient.get<ApiResponse<any[]>>('/profile/skills').catch(() => null),
+          apiClient.get<ApiResponse<any[]>>('/experience').catch(() => null),
+          apiClient.get<ApiResponse<any[]>>('/education').catch(() => null),
+          apiClient.get<ApiResponse<any[]>>('/projects').catch(() => null),
         ]);
+
+        if (profRes?.data?.success && profRes.data.data) {
+          setProfile(profRes.data.data);
+          if (profRes.data.data.professionalHeadline) {
+            setTargetRole(profRes.data.data.professionalHeadline);
+          }
+        }
+        if (skRes?.data?.success && Array.isArray(skRes.data.data)) setSkills(skRes.data.data);
+        if (expRes?.data?.success && Array.isArray(expRes.data.data)) setExperiences(expRes.data.data);
+        if (eduRes?.data?.success && Array.isArray(eduRes.data.data)) setEducations(eduRes.data.data);
+        if (projRes?.data?.success && Array.isArray(projRes.data.data)) setProjects(projRes.data.data);
 
         if (jobsRes?.data?.success) {
           setJobs(jobsRes.data.data);
@@ -149,6 +172,27 @@ export const ResumeBuilderPage: React.FC = () => {
   const c = activeVersion?.content?.contact;
   const content = activeVersion?.content;
 
+  const previewName = (
+    c?.fullName ||
+    user?.fullName ||
+    (profile?.contactEmail ? profile.contactEmail.split('@')[0] : 'YOUR NAME')
+  ).toUpperCase();
+
+  const previewEmail = c?.email || profile?.contactEmail || user?.email || 'your.email@example.com';
+  const previewPhone = c?.phone || profile?.phone || '';
+  const previewLocation = c?.location || [profile?.city, profile?.country].filter(Boolean).join(', ') || '';
+  const previewContactLine = [
+    targetRole,
+    previewEmail,
+    previewPhone,
+    previewLocation,
+    profile?.linkedinUrl && 'LinkedIn',
+    profile?.githubUrl && 'GitHub',
+    profile?.portfolioUrl && 'Portfolio',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <div>
       {/* Pagehead */}
@@ -175,11 +219,11 @@ export const ResumeBuilderPage: React.FC = () => {
           <div style={{ marginTop: '17px' }}>
             <div className="resume-paper" id="paper">
               <h2 contentEditable suppressContentEditableWarning>
-                {c?.fullName ? c.fullName.toUpperCase() : 'JORDAN DAVIS'}
+                {previewName}
               </h2>
 
               <div className="contact" contentEditable suppressContentEditableWarning>
-                {targetRole} · {c?.email || 'jordan@example.com'} · {c?.phone || '+1 (555) 019-2834'} · {c?.location || 'San Francisco, CA'} · LinkedIn · Portfolio
+                {previewContactLine}
               </div>
 
               <div className="line" style={{ background: paperColor }}></div>
@@ -187,14 +231,17 @@ export const ResumeBuilderPage: React.FC = () => {
               <h3>PROFESSIONAL SUMMARY</h3>
               <p contentEditable suppressContentEditableWarning>
                 {content?.professionalSummary ||
-                  'Frontend developer focused on creating responsive, accessible web experiences and reusable interfaces. Experienced in building component-driven applications and collaborating across product teams.'}
+                  profile?.professionalSummary ||
+                  'Add your professional summary in My Profile or synthesize a tailored resume from the Job Analyzer.'}
               </p>
 
               <h3>CORE SKILLS</h3>
               <p contentEditable suppressContentEditableWarning>
                 {content?.primarySkills && content.primarySkills.length > 0
                   ? [...content.primarySkills, ...(content.secondarySkills || [])].join(' · ')
-                  : 'React · JavaScript · HTML · CSS · Accessibility · REST APIs · Git · Tailwind CSS'}
+                  : skills.length > 0
+                  ? skills.map((s: any) => s.skillName).join(' · ')
+                  : 'Add your skills in My Profile to populate this section.'}
               </p>
 
               <h3>EXPERIENCE</h3>
@@ -217,20 +264,19 @@ export const ResumeBuilderPage: React.FC = () => {
                     )}
                   </div>
                 ))
-              ) : (
-                <>
-                  <div className="role" contentEditable suppressContentEditableWarning>
-                    Frontend Developer <span className="date">2023 — Present</span>
+              ) : experiences.length > 0 ? (
+                experiences.map((exp: any, i: number) => (
+                  <div key={i} style={{ marginBottom: '12px' }}>
+                    <div className="role" contentEditable suppressContentEditableWarning>
+                      {exp.jobTitle} — {exp.employer} <span className="date">{exp.startDate} — {exp.currentRole ? 'Present' : exp.endDate}</span>
+                    </div>
+                    <p contentEditable suppressContentEditableWarning>{exp.description || 'Key contributor to system development and operational improvements.'}</p>
                   </div>
-                  <ul>
-                    <li contentEditable suppressContentEditableWarning>
-                      Built reusable interface components to improve consistency across product screens.
-                    </li>
-                    <li contentEditable suppressContentEditableWarning>
-                      Collaborated with design and engineering teams to deliver responsive experiences.
-                    </li>
-                  </ul>
-                </>
+                ))
+              ) : (
+                <p style={{ color: 'var(--muted)', fontStyle: 'italic', fontSize: '12px' }} contentEditable suppressContentEditableWarning>
+                  No work experience records added yet. Add your experience in My Profile to auto-populate here.
+                </p>
               )}
 
               <h3>SELECTED PROJECTS</h3>
@@ -243,15 +289,19 @@ export const ResumeBuilderPage: React.FC = () => {
                     <p contentEditable suppressContentEditableWarning>{p.description}</p>
                   </div>
                 ))
-              ) : (
-                <>
-                  <div className="role" contentEditable suppressContentEditableWarning>
-                    Accessible Product Dashboard
+              ) : projects.length > 0 ? (
+                projects.map((p: any, i: number) => (
+                  <div key={i} style={{ marginBottom: '10px' }}>
+                    <div className="role" contentEditable suppressContentEditableWarning>
+                      {p.name} {p.technicalStack && `· ${p.technicalStack}`}
+                    </div>
+                    <p contentEditable suppressContentEditableWarning>{p.description}</p>
                   </div>
-                  <p contentEditable suppressContentEditableWarning>
-                    Created a responsive dashboard layout with reusable components and accessible interaction patterns.
-                  </p>
-                </>
+                ))
+              ) : (
+                <p style={{ color: 'var(--muted)', fontStyle: 'italic', fontSize: '12px' }} contentEditable suppressContentEditableWarning>
+                  No projects added yet. Add your key projects in My Profile.
+                </p>
               )}
 
               <h3>EDUCATION & CERTIFICATIONS</h3>
@@ -262,9 +312,16 @@ export const ResumeBuilderPage: React.FC = () => {
                     {edu.grade && ` · CGPA: ${edu.grade}`}
                   </p>
                 ))
+              ) : educations.length > 0 ? (
+                educations.map((edu: any, i: number) => (
+                  <p key={i} contentEditable suppressContentEditableWarning>
+                    {edu.degree} in {edu.fieldOfStudy} — {edu.institution} ({edu.startDate} — {edu.endDate})
+                    {edu.gradeValue && (edu.showGradeOnResume ?? true) && ` · ${edu.gradeType || 'CGPA'}: ${edu.gradeValue}`}
+                  </p>
+                ))
               ) : (
-                <p contentEditable suppressContentEditableWarning>
-                  B.S. in Computer Science — University of Technology · 2019 — 2023
+                <p style={{ color: 'var(--muted)', fontStyle: 'italic', fontSize: '12px' }} contentEditable suppressContentEditableWarning>
+                  No education records added yet. Add your educational qualifications in My Profile.
                 </p>
               )}
             </div>

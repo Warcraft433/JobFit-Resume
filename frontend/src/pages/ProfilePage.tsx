@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../api/client';
 import type { ApiResponse, UserProfile, Education, Experience, UserSkill, Project, Certification, SkillCategory } from '../types';
 import {
@@ -82,6 +83,7 @@ const COMMON_TECH_STACK = [
 ];
 
 export const ProfilePage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>('personal');
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -198,7 +200,11 @@ export const ProfilePage: React.FC = () => {
       ]);
 
       if (pRes.data.success && pRes.data.data) {
-        setProfile(pRes.data.data);
+        const loadedProfile = pRes.data.data;
+        if (!loadedProfile.contactEmail && user?.email) {
+          loadedProfile.contactEmail = user.email;
+        }
+        setProfile(loadedProfile);
         if (pRes.data.data.customLinks) {
           try {
             const parsed = JSON.parse(pRes.data.data.customLinks);
@@ -543,7 +549,7 @@ export const ProfilePage: React.FC = () => {
                   type="email"
                   value={profile.contactEmail || ''}
                   onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
-                  placeholder="alex.mercer@example.com"
+                  placeholder={user?.email || 'you@example.com'}
                   className="block w-full rounded-xl border border-[var(--border)] p-2.5 text-sm focus:border-brand-500 focus:outline-none"
                 />
               </div>
@@ -604,7 +610,7 @@ export const ProfilePage: React.FC = () => {
                   type="url"
                   value={profile.linkedinUrl || ''}
                   onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
-                  placeholder="https://linkedin.com/in/alex"
+                  placeholder="https://linkedin.com/in/username"
                   className="block w-full rounded-xl border border-[var(--border)] p-2.5 text-sm focus:border-brand-500 focus:outline-none"
                 />
               </div>
@@ -614,7 +620,7 @@ export const ProfilePage: React.FC = () => {
                   type="url"
                   value={profile.githubUrl || ''}
                   onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
-                  placeholder="https://github.com/alex"
+                  placeholder="https://github.com/username"
                   className="block w-full rounded-xl border border-[var(--border)] p-2.5 text-sm focus:border-brand-500 focus:outline-none"
                 />
               </div>
@@ -624,7 +630,7 @@ export const ProfilePage: React.FC = () => {
                   type="url"
                   value={profile.portfolioUrl || ''}
                   onChange={(e) => setProfile({ ...profile, portfolioUrl: e.target.value })}
-                  placeholder="https://alexmercer.dev"
+                  placeholder="https://yourportfolio.dev"
                   className="block w-full rounded-xl border border-[var(--border)] p-2.5 text-sm focus:border-brand-500 focus:outline-none"
                 />
               </div>
@@ -657,7 +663,7 @@ export const ProfilePage: React.FC = () => {
                   type="text"
                   value={newLinkUrl}
                   onChange={(e) => setNewLinkUrl(e.target.value)}
-                  placeholder="URL (e.g. leetcode.com/u/alex)"
+                  placeholder="URL (e.g. leetcode.com/u/username)"
                   className="flex-1 rounded-xl border border-[var(--border)] p-2 text-xs focus:border-brand-500 focus:outline-none"
                 />
                 <button

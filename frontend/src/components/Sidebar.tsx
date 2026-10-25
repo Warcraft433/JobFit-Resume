@@ -9,6 +9,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
   const { user } = useAuth();
+  const displayName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'My Account');
   const initials = user?.fullName
     ? user.fullName
         .split(' ')
@@ -16,7 +17,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         .join('')
         .toUpperCase()
         .slice(0, 2)
-    : 'JD';
+    : user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : 'CV';
 
   return (
     <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
@@ -128,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         <div className="user">
           <div className="avatar">{initials}</div>
           <div className="usermeta">
-            <b>{user?.fullName || 'Jordan Davis'}</b>
+            <b>{displayName}</b>
             <small>Free workspace</small>
           </div>
         </div>
